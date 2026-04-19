@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Short Game" />
+  <title>Short Game Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { min-height: 100vh; background: #0f1a0f; font-family: Georgia, serif; color: #e8e0cc; padding-bottom: 60px; }
+    header { background: linear-gradient(135deg, #1a2e1a 0%, #0f1a0f 60%); border-bottom: 1px solid #2d4a2d; padding: 36px 20px 0; position: relative; overflow: hidden; }
+    header::after { content: ''; position: absolute; top: -30px; right: -20px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(120,180,80,0.09) 0%, transparent 70%); pointer-events: none; }
+    .eyebrow { font-size: 10px; letter-spacing: 3px; color: #7ab450; text-transform: uppercase; margin-bottom: 5px; }
+    h1 { font-size: 24px; font-weight: normal; color: #f0e8d0; letter-spacing: 0.4px; margin-bottom: 20px; }
+    .tabs { display: flex; margin-top: 4px; }
+    .tab { flex: 1; padding: 10px 0; font-size: 12px; letter-spacing: 1px; text-align: center; border: 1px solid #7ab450; background: transparent; color: #7ab450; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .tab:first-child { border-radius: 4px 0 0 0; border-right: none; }
+    .tab:last-child { border-radius: 0 4px 0 0; }
+    .tab.active { background: #7ab450; color: #0f1a0f; font-weight: bold; }
+    main { padding: 20px 20px 40px; max-width: 560px; margin: 0 auto; }
+    .meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .field-label { font-size: 10px; letter-spacing: 2px; color: #7ab450; text-transform: uppercase; display: block; margin-bottom: 5px; }
+    input[type="date"] { background: #1a2e1a; border: 1px solid #2d4a2d; color: #e8e0cc; padding: 7px 10px; border-radius: 4px; font-size: 14px; font-family: inherit; }
+    .pct { font-size: 30px; font-weight: bold; color: #e8e0cc; text-align: right; transition: color 0.3s; }
+    .pct.done { color: #7ab450; }
+    .pct span { font-size: 13px; color: #7ab450; }
+    .progress-bar { background: #1a2e1a; border: 1px solid #2d4a2d; border-radius: 3px; height: 4px; margin-bottom: 28px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #4a8a20, #7ab450); transition: width 0.4s ease; }
+    .section-label { font-size: 11px; letter-spacing: 2px; color: #7ab450; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(122,180,80,0.2); }
+    .section { margin-bottom: 26px; }
+    .drill-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #1e2e1e; cursor: pointer; user-select: none; }
+    .drill-row:last-of-type { border-bottom: none; }
+    .checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #3d5a3d; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 13px; font-weight: bold; color: #0f1a0f; }
+    .checkbox.checked { background: #7ab450; border-color: #7ab450; }
+    .drill-name { font-size: 14px; color: #e8e0cc; transition: color 0.15s; }
+    .drill-name.checked { color: #7ab450; text-decoration: line-through; }
+    .drill-desc { font-size: 12px; color: #5a7a5a; margin-top: 2px; }
+    .score-row { margin-top: 14px; }
+    input[type="number"] { width: 70px; background: #1a2e1a; border: 1px solid #2d4a2d; color: #e8e0cc; padding: 7px 10px; border-radius: 4px; font-size: 16px; font-family: inherit; }
+    textarea { width: 100%; background: #1a2e1a; border: 1px solid #2d4a2d; color: #e8e0cc; padding: 12px 14px; border-radius: 6px; font-size: 14px; font-family: Georgia, serif; line-height: 1.6; resize: vertical; }
+    textarea::placeholder { color: #4a6a4a; }
+    .notes-section { margin-bottom: 22px; }
+    .save-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #4a8a20, #7ab450); color: #0f1a0f; border: none; border-radius: 6px; font-size: 15px; font-family: inherit; letter-spacing: 1px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+    .save-btn.saved { background: #3d6e20; color: #a0c878; cursor: default; }
+    .empty-state { text-align: center; padding: 70px 0; color: #4a6a3a; font-size: 15px; line-height: 1.8; }
+    .session-card { background: #1a2e1a; border: 1px solid #2d4a2d; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-date { font-size: 16px; color: #f0e8d0; margin-bottom: 3px; }
+    .card-meta { font-size: 12px; color: #7ab450; }
+    .remove-btn { background: transparent; border: 1px solid #3d4a3d; color: #5a7a5a; padding: 4px 9px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .drill-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 11px; padding: 3px 8px; border-radius: 12px; border: 1px solid #2d3d2d; background: rgba(255,255,255,0.03); color: #4a6a4a; }
+    .chip.done { background: rgba(122,180,80,0.16); color: #7ab450; border-color: rgba(122,180,80,0.3); }
+    .card-notes { margin-top: 12px; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 4px; border-left: 2px solid #3d6020; font-size: 13px; color: #c0b898; line-height: 1.6; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Short Game Practice</div>
+  <h1>Progress Tracker</h1>
+  <div class="tabs">
+    <button class="tab active" id="tab-log" onclick="switchTab('log')">Today's Session</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">History</button>
+  </div>
+</header>
+<main>
+  <div id="view-log">
+    <div class="meta-row">
+      <div>
+        <span class="field-label">Date</span>
+        <input type="date" id="session-date" />
+      </div>
+      <div>
+        <span class="field-label" style="text-align:right">Session</span>
+        <div class="pct" id="pct-display">0<span>%</span></div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="section">
+      <div class="section-label">⛳ Chipping</div>
+      <div class="drill-row" onclick="toggleDrill('basics')"><div class="checkbox" id="cb-basics"></div><div><div class="drill-name" id="dn-basics">Basics Warmup</div><div class="drill-desc">3–5 ft off green, clean contact focus</div></div></div>
+      <div class="drill-row" onclick="toggleDrill('ladder')"><div class="checkbox" id="cb-ladder"></div><div><div class="drill-name" id="dn-ladder">Distance Ladder</div><div class="drill-desc">10 / 20 / 30 ft — land within a club-length</div></div></div>
+      <div class="drill-row" onclick="toggleDrill('updown')"><div class="checkbox" id="cb-updown"></div><div><div class="drill-name" id="dn-updown">Up-and-Down Game</div><div class="drill-desc">5 attempts from tough lie — count tap-ins</div></div></div>
+      <div class="score-row"><span class="field-label">Up-and-Down Score (out of 5)</span><input type="number" id="updowns" min="0" max="5" placeholder="e.g. 3" /></div>
+    </div>
+    <div class="section">
+      <div class="section-label">🏌️ Putting</div>
+      <div class="drill-row" onclick="toggleDrill('threeft')"><div class="checkbox" id="cb-threeft"></div><div><div class="drill-name" id="dn-threeft">3-Footer Circle</div><div class="drill-desc">6 balls, make all 6 before moving on</div></div></div>
+      <div class="drill-row" onclick="toggleDrill('lag')"><div class="checkbox" id="cb-lag"></div><div><div class="drill-name" id="dn-lag">Lag Putting</div><div class="drill-desc">4 balls from 20–30 ft — stop within 18 inches</div></div></div>
+      <div class="drill-row" onclick="toggleDrill('break')"><div class="checkbox" id="cb-break"></div><div><div class="drill-name" id="dn-break">Speed + Break</div><div class="drill-desc">5 putts with break — focus on starting line</div></div></div>
+    </div>
+    <div class="notes-section">
+      <span class="field-label">Session Notes</span>
+      <textarea id="session-notes" rows="4" placeholder="What felt good? What needs work? Any swing thoughts to remember…"></textarea>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveSession()">Save Session</button>
+  </div>
+  <div id="view-history" style="display:none"><div id="history-list"></div></div>
+</main>
+<script>
+  const DRILLS = [
+    { id: "basics",  label: "Basics Warmup" },
+    { id: "ladder",  label: "Distance Ladder" },
+    { id: "updown",  label: "Up-and-Down Game" },
+    { id: "threeft", label: "3-Footer Circle" },
+    { id: "lag",     label: "Lag Putting" },
+    { id: "break",   label: "Speed + Break" },
+  ];
+  let completed = {}, sessions = [];
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function init() {
+    document.getElementById("session-date").value = todayStr();
+    try { sessions = JSON.parse(localStorage.getItem("sg-sessions") || "[]"); } catch {}
+    updateProgress(); renderHistory();
+  }
+  function toggleDrill(id) {
+    completed[id] = !completed[id];
+    const cb = document.getElementById("cb-" + id);
+    const dn = document.getElementById("dn-" + id);
+    if (completed[id]) { cb.classList.add("checked"); cb.textContent = "✓"; dn.classList.add("checked"); }
+    else { cb.classList.remove("checked"); cb.textContent = ""; dn.classList.remove("checked"); }
+    updateProgress();
+  }
+  function updateProgress() {
+    const count = DRILLS.filter(d => completed[d.id]).length;
+    const pct = Math.round((count / DRILLS.length) * 100);
+    document.getElementById("progress-fill").style.width = pct + "%";
+    const pctEl = document.getElementById("pct-display");
+    pctEl.innerHTML = pct + '<span>%</span>';
+    pctEl.className = "pct" + (pct === 100 ? " done" : "");
+  }
+  function saveSession() {
+    const btn = document.getElementById("save-btn");
+    const session = { date: document.getElementById("session-date").value, completed: { ...completed }, updowns: document.getElementById("updowns").value, notes: document.getElementById("session-notes").value };
+    sessions.unshift(session);
+    try { localStorage.setItem("sg-sessions", JSON.stringify(sessions)); } catch {}
+    btn.textContent = "✓ Session Saved"; btn.classList.add("saved");
+    setTimeout(() => {
+      completed = {};
+      DRILLS.forEach(d => { document.getElementById("cb-" + d.id).classList.remove("checked"); document.getElementById("cb-" + d.id).textContent = ""; document.getElementById("dn-" + d.id).classList.remove("checked"); });
+      document.getElementById("updowns").value = "";
+      document.getElementById("session-notes").value = "";
+      document.getElementById("session-date").value = todayStr();
+      updateProgress(); btn.textContent = "Save Session"; btn.classList.remove("saved"); renderHistory();
+    }, 1400);
+  }
+  function deleteSession(idx) {
+    sessions.splice(idx, 1);
+    try { localStorage.setItem("sg-sessions", JSON.stringify(sessions)); } catch {}
+    renderHistory();
+  }
+  function renderHistory() {
+    const el = document.getElementById("history-list");
+    document.getElementById("tab-history").textContent = "History (" + sessions.length + ")";
+    if (sessions.length === 0) { el.innerHTML = '<div class="empty-state">No sessions logged yet.<br><span style="font-size:13px">Complete your first session to see history.</span></div>'; return; }
+    el.innerHTML = sessions.map((s, idx) => {
+      const count = DRILLS.filter(d => s.completed[d.id]).length;
+      const pct = Math.round((count / DRILLS.length) * 100);
+      const chips = DRILLS.map(d => `<span class="chip ${s.completed[d.id] ? 'done' : ''}">${s.completed[d.id] ? '✓ ' : ''}${d.label}</span>`).join("");
+      const score = s.updowns !== "" ? ` · Up-and-downs: ${s.updowns}/5` : "";
+      const notes = s.notes ? `<div class="card-notes">${escHtml(s.notes)}</div>` : "";
+      return `<div class="session-card"><div class="card-top"><div><div class="card-date">${s.date}</div><div class="card-meta">${count}/${DRILLS.length} drills · ${pct}% complete${score}</div></div><button class="remove-btn" onclick="deleteSession(${idx})">Remove</button></div><div class="drill-chips">${chips}</div>${notes}</div>`;
+    }).join("");
+  }
+  function escHtml(str) { return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function switchTab(tab) {
+    document.getElementById("view-log").style.display = tab === "log" ? "" : "none";
+    document.getElementById("view-history").style.display = tab === "history" ? "" : "none";
+    document.getElementById("tab-log").classList.toggle("active", tab === "log");
+    document.getElementById("tab-history").classList.toggle("active", tab === "history");
+  }
+  init();
+</script>
+</body>
+</html>
